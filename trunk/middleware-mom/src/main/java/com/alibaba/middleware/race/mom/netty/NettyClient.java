@@ -55,6 +55,12 @@ public class NettyClient {
     {
     	logger.debug("NettyClient收到信息");
     }
+    public void close()
+	{
+    	logger.debug("NettyClient关闭");
+		this.eventLoopGroupWorker.shutdownGracefully();
+		this.defaultEventExecutorGroup.shutdownGracefully();
+	}
     class NettyClientHandler extends SimpleChannelInboundHandler<NettyCommand> {
 
         @Override

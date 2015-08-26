@@ -67,13 +67,20 @@ public class NettyServer {
 	}
 	public void processMessageReceived(ChannelHandlerContext ctx, NettyCommand msg)
 	{
-		logger.debug("NettyServer收到信息");
+		logger.info("NettyServer收到信息");
+	}
+	public void close()
+	{
+		logger.error("NettyServer关闭");
+		this.eventLoopGroupBoss.shutdownGracefully();
+		this.eventLoopGroupWorker.shutdownGracefully();
+		this.defaultEventExecutorGroup.shutdownGracefully();
 	}
 	class NettyServerHandler extends SimpleChannelInboundHandler<NettyCommand> {
 
         @Override
         protected void channelRead0(ChannelHandlerContext ctx, NettyCommand msg) throws Exception {
-            processMessageReceived(ctx, msg);
+        	processMessageReceived(ctx, msg);
         }
     }
 }
