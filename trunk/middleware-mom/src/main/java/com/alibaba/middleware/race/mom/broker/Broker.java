@@ -6,6 +6,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.log4j.Logger;
 
 import com.alibaba.middleware.race.mom.netty.NettyCommand;
+import com.alibaba.middleware.race.mom.netty.NettyOnReceiveListener;
 import com.alibaba.middleware.race.mom.netty.NettyServer;
 
 import io.netty.bootstrap.ServerBootstrap;
@@ -20,7 +21,7 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.util.concurrent.DefaultEventExecutorGroup;
 
-public class Broker extends NettyServer{
+public class Broker extends NettyServer implements NettyOnReceiveListener{
 	private static Logger logger = Logger.getLogger(Broker.class);  
 	
     /**
@@ -29,13 +30,9 @@ public class Broker extends NettyServer{
 	public Broker()
 	{
 		logger.info("启动broker");
+		// 设置监听
+		this.nettyOnReceiveListener=this;
 		super.start();
-	}
-	
-	@Override
-	public void processMessageReceived(ChannelHandlerContext ctx, NettyCommand msg) {
-		super.processMessageReceived(ctx, msg);
-		logger.debug("子类收到信息");
 	}
 
 	/**
@@ -45,5 +42,13 @@ public class Broker extends NettyServer{
 	public static void main(String args[])
 	{
 		Broker broker=new Broker();
+	}
+	/**
+	 * 收到信息回调
+	 */
+	@Override
+	public void processMessageReceived(ChannelHandlerContext ctx, NettyCommand msg) {
+		logger.info("borker get msg "+msg.getBody());
+		
 	}
 }

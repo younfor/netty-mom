@@ -22,12 +22,13 @@ public class NettyDecoder extends LengthFieldBasedFrameDecoder {
         ByteBuf frame = null;
         try {
             frame = (ByteBuf) super.decode(ctx, in);
+           
             if (null == frame) {
                 return null;
             }
 
             ByteBuffer byteBuffer = frame.nioBuffer();
-
+           
             return NettyCommand.decode(byteBuffer);
         } catch (Exception e) {
         	logger.error("decode exception:", e);

@@ -22,6 +22,8 @@ public class NettyServer {
 	protected final EventLoopGroup eventLoopGroupWorker;
 	protected final EventLoopGroup eventLoopGroupBoss;
 	protected DefaultEventExecutorGroup defaultEventExecutorGroup;
+	// 回调监听
+	protected NettyOnReceiveListener nettyOnReceiveListener = null;
 	protected int port=0;
 	public NettyServer()
 	{
@@ -65,10 +67,6 @@ public class NettyServer {
 	            throw new RuntimeException("this.serverBootstrap.bind().sync() InterruptedException", e1);
 	        }
 	}
-	public void processMessageReceived(ChannelHandlerContext ctx, NettyCommand msg)
-	{
-		logger.info("NettyServer收到信息");
-	}
 	public void close()
 	{
 		logger.error("NettyServer关闭");
@@ -80,7 +78,8 @@ public class NettyServer {
 
         @Override
         protected void channelRead0(ChannelHandlerContext ctx, NettyCommand msg) throws Exception {
-        	processMessageReceived(ctx, msg);
+
+        	nettyOnReceiveListener.processMessageReceived(ctx, msg);
         }
     }
 }

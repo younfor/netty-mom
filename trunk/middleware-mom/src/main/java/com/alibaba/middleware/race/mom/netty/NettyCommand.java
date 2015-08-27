@@ -4,12 +4,10 @@ import java.nio.ByteBuffer;
 import java.util.concurrent.atomic.AtomicInteger;
 public class NettyCommand {
 
-	private static AtomicInteger RequestId = new AtomicInteger(0);
 	/**
 	 * header
 	 */
-	private int cmdId = RequestId.getAndIncrement();
-	private NettyCommandType type;
+	private byte type;
 	/**
 	 * body
 	 */
@@ -21,11 +19,10 @@ public class NettyCommand {
 	public ByteBuffer encodeHeader() {
 		final int bodyLength=(this.body != null ? this.body.length : 0);
 		// 1> header length size
-		int length = 4;
+		int length = 1;
 
 		// 2> header data length
-		byte[] headerData = NettySerializable.encode(this);
-		length += headerData.length;
+		byte headerData = type;
 
 		// 3> body data length
 		length += bodyLength;
@@ -34,9 +31,6 @@ public class NettyCommand {
 
 		// length
 		result.putInt(length);
-
-		// header length
-		result.putInt(headerData.length);
 
 		// header data
 		result.put(headerData);
@@ -47,28 +41,25 @@ public class NettyCommand {
 	}
 	public static NettyCommand decode(final ByteBuffer byteBuffer) {
         int length = byteBuffer.limit();
-        int headerLength = byteBuffer.getInt();
-
-        byte[] headerData = new byte[headerLength];
-        byteBuffer.get(headerData);
-
-        int bodyLength = length - 4 - headerLength;
+        byte headerData = byteBuffer.get();
+        int bodyLength = length - 1;
         byte[] bodyData = null;
         if (bodyLength > 0) {
             bodyData = new byte[bodyLength];
             byteBuffer.get(bodyData);
         }
 
-        NettyCommand cmd = NettySerializable.decode(headerData, NettyCommand.class);
+        NettyCommand cmd = new NettyCommand();
+        cmd.setType(headerData);
         cmd.body = bodyData;
 
         return cmd;
     }
-	public NettyCommandType getType() {
+	public byte getType() {
 		return type;
 	}
 
-	public void setType(NettyCommandType type) {
+	public void setType(byte type) {
 		this.type = type;
 	}
 
@@ -80,8 +71,5 @@ public class NettyCommand {
 		this.body = body;
 	}
 
-	public int getCmdId() {
-		return cmdId;
-	}
 
 }

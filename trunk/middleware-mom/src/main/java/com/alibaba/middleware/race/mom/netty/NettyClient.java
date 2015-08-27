@@ -20,53 +20,52 @@ public class NettyClient {
 	private static Logger logger = Logger.getLogger(NettyClient.class);
 	// netty 参数
 	private final Bootstrap bootstrap = new Bootstrap();
-    private final EventLoopGroup eventLoopGroupWorker;
-    private DefaultEventExecutorGroup defaultEventExecutorGroup;
-    public NettyClient()
-    {
-    	this.eventLoopGroupWorker = new NioEventLoopGroup(1);
-    	this.defaultEventExecutorGroup = new DefaultEventExecutorGroup(8);	
-    }
-    public ChannelFuture creatChannel()
-    {
-        return this.bootstrap.connect("127.0.0.1",9999);
-    }
-    public void start()
-    {
-    	Bootstrap handler = this.bootstrap.group(this.eventLoopGroupWorker).channel(NioSocketChannel.class)//
-                //
-                .option(ChannelOption.TCP_NODELAY, true)
-                //
-                .option(ChannelOption.SO_KEEPALIVE, false)
-                //
-                .handler(new ChannelInitializer<SocketChannel>() {
-                    @Override
-                    public void initChannel(SocketChannel ch) throws Exception {
-                        ch.pipeline().addLast(//
-                            defaultEventExecutorGroup, //
-                            new NettyEncoder(), //
-                            new NettyDecoder(), //
-                            new NettyClientHandler());
-                    }
-                });
+	private final EventLoopGroup eventLoopGroupWorker;
+	// 回调监听
+	protected NettyOnReceiveListener nettyOnReceiveListener = null;
+	private DefaultEventExecutorGroup defaultEventExecutorGroup;
 
-    }
-    public void processMessageReceived(ChannelHandlerContext ctx, NettyCommand msg)
-    {
-    	logger.debug("NettyClient收到信息");
-    }
-    public void close()
-	{
-    	logger.debug("NettyClient关闭");
+	public NettyClient() {
+		this.eventLoopGroupWorker = new NioEventLoopGroup(1);
+		this.defaultEventExecutorGroup = new DefaultEventExecutorGroup(8);
+	}
+
+	public ChannelFuture creatChannel() {
+		return this.bootstrap.connect("127.0.0.1", 9999);
+	}
+
+	public void start() {
+		Bootstrap handler = this.bootstrap.group(this.eventLoopGroupWorker).channel(NioSocketChannel.class)//
+				//
+				.option(ChannelOption.TCP_NODELAY, true)
+				//
+				.option(ChannelOption.SO_KEEPALIVE, false)
+				//
+				.handler(new ChannelInitializer<SocketChannel>() {
+					@Override
+					public void initChannel(SocketChannel ch) throws Exception {
+						ch.pipeline().addLast(//
+								defaultEventExecutorGroup, //
+								new NettyEncoder(), //
+								new NettyDecoder(), //
+								new NettyClientHandler());
+					}
+				});
+
+	}
+
+	public void close() {
+		logger.debug("NettyClient关闭");
 		this.eventLoopGroupWorker.shutdownGracefully();
 		this.defaultEventExecutorGroup.shutdownGracefully();
 	}
-    class NettyClientHandler extends SimpleChannelInboundHandler<NettyCommand> {
 
-        @Override
-        protected void channelRead0(ChannelHandlerContext ctx, NettyCommand msg) throws Exception {
-            processMessageReceived(ctx, msg);
+	class NettyClientHandler extends SimpleChannelInboundHandler<NettyCommand> {
 
-        }
-    }
+		@Override
+		protected void channelRead0(ChannelHandlerContext ctx, NettyCommand msg) throws Exception {
+
+			nettyOnReceiveListener.processMessageReceived(ctx, msg);
+		}
+	}
 }
