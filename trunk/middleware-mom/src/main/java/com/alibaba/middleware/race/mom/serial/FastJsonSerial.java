@@ -1,4 +1,4 @@
-package com.alibaba.middleware.race.mom.netty;
+package com.alibaba.middleware.race.mom.serial;
 
 import java.nio.charset.Charset;
 
@@ -6,7 +6,7 @@ import com.alibaba.fastjson.JSON;
 
 
 
-public class NettySerializable {
+public class FastJsonSerial implements Serial{
     public String toJson() {
         return toJson(false);
     }
@@ -36,7 +36,7 @@ public class NettySerializable {
     }
 
 
-    public static byte[] encode(final Object obj) {
+    public byte[] encode(final Object obj) {
         final String json = toJson(obj, false);
         if (json != null) {
             return json.getBytes(Charset.forName("UTF-8"));
@@ -45,7 +45,7 @@ public class NettySerializable {
     }
 
 
-    public static <T> T decode(final byte[] data, Class<T> classOfT) {
+    public  <T> T decode(final byte[] data, Class<T> classOfT) {
         final String json = new String(data, Charset.forName("UTF-8"));
         return fromJson(json, classOfT);
     }

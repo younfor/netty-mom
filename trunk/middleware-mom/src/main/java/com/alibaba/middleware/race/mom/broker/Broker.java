@@ -1,29 +1,19 @@
 package com.alibaba.middleware.race.mom.broker;
 
-import java.net.InetSocketAddress;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.log4j.Logger;
-
+import com.alibaba.middleware.race.mom.Message;
+import com.alibaba.middleware.race.mom.bean.RequestSubscribe;
 import com.alibaba.middleware.race.mom.netty.NettyCommand;
+import com.alibaba.middleware.race.mom.netty.NettyCommandType;
 import com.alibaba.middleware.race.mom.netty.NettyOnReceiveListener;
 import com.alibaba.middleware.race.mom.netty.NettyServer;
-
-import io.netty.bootstrap.ServerBootstrap;
-import io.netty.channel.ChannelFuture;
+import com.alibaba.middleware.race.mom.serial.KryoSerial;
+import com.alibaba.middleware.race.mom.serial.Serial;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.ChannelOption;
-import io.netty.channel.EventLoopGroup;
-import io.netty.channel.nio.NioEventLoopGroup;
-import io.netty.channel.socket.SocketChannel;
-import io.netty.channel.socket.nio.NioServerSocketChannel;
-import io.netty.handler.timeout.IdleStateHandler;
-import io.netty.util.concurrent.DefaultEventExecutorGroup;
 
 public class Broker extends NettyServer implements NettyOnReceiveListener{
 	private static Logger logger = Logger.getLogger(Broker.class);  
-	
+	private Serial serial=new KryoSerial();
     /**
      * 初始化
      */
@@ -31,7 +21,7 @@ public class Broker extends NettyServer implements NettyOnReceiveListener{
 	{
 		logger.info("启动broker");
 		// 设置监听
-		this.nettyOnReceiveListener=this;
+		super.nettyOnReceiveListener=this;
 		super.start();
 	}
 
@@ -48,7 +38,18 @@ public class Broker extends NettyServer implements NettyOnReceiveListener{
 	 */
 	@Override
 	public void processMessageReceived(ChannelHandlerContext ctx, NettyCommand msg) {
-		logger.info("borker get msg "+msg.getBody());
-		
+		logger.info("borker get msg "+msg.getType());
+		switch(msg.getType())
+		{
+		case NettyCommandType.Producer2Broker:
+			logger.info(msg.getBody().length);
+			Message mes=serial.decode(msg.getBody(), Message.class);
+			logger.info(new String(mes.getBody()));
+			break;
+		case NettyCommandType.Consumer2BrokerSubscribe:
+			RequestSubscribe requestSub=serial.decode(msg.getBody(), RequestSubscribe.class);
+			logger.info("sub:"+requestSub.getTopic());
+			break;
+		}
 	}
 }

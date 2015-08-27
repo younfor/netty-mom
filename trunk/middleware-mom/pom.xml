@@ -37,5 +37,10 @@
 	<artifactId>netty-all</artifactId>
 	<version>4.0.23.Final</version>
 </dependency>
+ <dependency>
+        <groupId>com.esotericsoftware</groupId>
+        <artifactId>kryo</artifactId>
+        <version>3.0.3</version>
+    </dependency>
   </dependencies>
 </project>

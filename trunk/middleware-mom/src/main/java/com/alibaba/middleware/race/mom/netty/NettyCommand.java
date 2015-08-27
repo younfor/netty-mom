@@ -70,6 +70,13 @@ public class NettyCommand {
 	public void setBody(byte[] body) {
 		this.body = body;
 	}
+	public static NettyCommand buildNettyCommand(byte type,byte[] body)
+	{
+		NettyCommand nc=new NettyCommand();
+		nc.setType(type);
+		nc.setBody(body);
+		return nc;
+	}
 
 
 }

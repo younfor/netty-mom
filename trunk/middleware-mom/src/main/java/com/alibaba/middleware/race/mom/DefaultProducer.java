@@ -7,7 +7,8 @@ import com.alibaba.middleware.race.mom.netty.NettyClient;
 import com.alibaba.middleware.race.mom.netty.NettyCommand;
 import com.alibaba.middleware.race.mom.netty.NettyCommandType;
 import com.alibaba.middleware.race.mom.netty.NettyOnReceiveListener;
-import com.alibaba.middleware.race.mom.netty.NettySerializable;
+import com.alibaba.middleware.race.mom.serial.KryoSerial;
+import com.alibaba.middleware.race.mom.serial.Serial;
 
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandlerContext;
@@ -17,9 +18,10 @@ public class DefaultProducer extends NettyClient implements Producer,NettyOnRece
 	private ChannelFuture producerChannelfuture;
 	private String topic;
 	private String groupId;
+	private Serial serial=new KryoSerial();
 	public DefaultProducer(){
 		// 设置监听
-		this.nettyOnReceiveListener=this;
+		super.nettyOnReceiveListener=this;
 	}
 	@Override
 	public void start() {
@@ -45,7 +47,7 @@ public class DefaultProducer extends NettyClient implements Producer,NettyOnRece
 		sr.setStatus(SendStatus.SUCCESS);
 		NettyCommand nc=new NettyCommand();
 		nc.setType(NettyCommandType.Producer2Broker);
-		nc.setBody(NettySerializable.encode(message));
+		nc.setBody(serial.encode(message));
 		System.out.println("开始发送");
 		producerChannelfuture.channel().writeAndFlush(nc);
 		return sr;
