@@ -14,6 +14,7 @@ import io.netty.channel.ChannelHandlerContext;
 public class Broker extends NettyServer implements NettyOnReceiveListener{
 	private static Logger logger = Logger.getLogger(Broker.class);  
 	private Serial serial=new KryoSerial();
+	private ConsumerManager consumerManager;
     /**
      * 初始化
      */
@@ -23,6 +24,8 @@ public class Broker extends NettyServer implements NettyOnReceiveListener{
 		// 设置监听
 		super.nettyOnReceiveListener=this;
 		super.start();
+		//初始化
+		consumerManager=new ConsumerManager();
 	}
 
 	/**
@@ -46,9 +49,10 @@ public class Broker extends NettyServer implements NettyOnReceiveListener{
 			Message mes=serial.decode(msg.getBody(), Message.class);
 			logger.info(new String(mes.getBody()));
 			break;
+		// 订阅信息
 		case NettyCommandType.Consumer2BrokerSubscribe:
 			RequestSubscribe requestSub=serial.decode(msg.getBody(), RequestSubscribe.class);
-			logger.info("sub:"+requestSub.getTopic());
+			consumerManager.addConsumer(ctx.channel(),requestSub);
 			break;
 		}
 	}
